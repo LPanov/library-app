@@ -9,5 +9,6 @@ public record GenreResponse(
         String code,
         String name,
         String description,
-        Boolean active) {
+        Boolean active,
+        Integer displayOrder) {
 }

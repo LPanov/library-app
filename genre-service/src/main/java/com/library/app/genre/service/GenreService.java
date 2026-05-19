@@ -2,10 +2,17 @@ package com.library.app.genre.service;
 
 import com.library.app.genre.model.Genre;
 import com.library.app.genre.repository.GenreRepository;
+import com.library.app.genre.service.mapper.GenreMapper;
 import com.library.app.genre.web.dto.GenreRequest;
 import com.library.app.genre.web.dto.GenreResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -22,14 +29,22 @@ public class GenreService {
     }
 
     public GenreResponse createGenre(GenreRequest genreRequest) {
-        Genre genre = Genre.builder()
-                .code(genreRequest.code())
-                .name(genreRequest.name())
-                .build();
+        Genre genre = GenreMapper.mapGenreRequest(genreRequest);
 
         save(genre);
         log.info("Genre created successfully: {}", genre);
 
-        return new GenreResponse(genre.getId(), genre.getCode(), genre.getName(), genre.getDescription(), genre.getActive());
+        return GenreMapper.getGenreResponse(genre);
+    }
+
+
+    public List<GenreResponse> getAllGenres() {
+        return genreRepository.findAll().stream().map(GenreMapper::getGenreResponse).toList();
+    }
+
+    public GenreResponse getGenreById(String id) {
+        Optional<Genre> genre = genreRepository.findById(UUID.fromString(id));
+
+        return genre.map(GenreMapper::getGenreResponse).orElse(null);
     }
 }

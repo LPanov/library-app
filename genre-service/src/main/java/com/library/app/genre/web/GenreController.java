@@ -25,4 +25,9 @@ public class GenreController {
                 .status(HttpStatus.CREATED)
                 .body(genreService.createGenre(genreRequest));
     }
+
+    @GetMapping
+    public ResponseEntity<?> getAllGenres() {
+        return ResponseEntity.ok(genreService.getAllGenres());
+    }
 }
