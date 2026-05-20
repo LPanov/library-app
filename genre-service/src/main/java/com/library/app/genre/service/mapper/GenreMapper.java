@@ -18,4 +18,14 @@ public class GenreMapper {
     public static @NonNull GenreResponse getGenreResponse(Genre genre) {
         return new GenreResponse(genre.getId(), genre.getCode(), genre.getName(), genre.getDescription(), genre.getActive(), genre.getDisplayOrder());
     }
+
+    public static void updateGenreFromEntity(GenreRequest genreRequest, Genre genre) {
+        if (genre != null && genreRequest != null) {
+            genre.setName(genreRequest.name());
+            genre.setDescription(genreRequest.description());
+            genre.setCode(genreRequest.code());
+            genre.setDisplayOrder(genreRequest.displayOrder() != null ? genreRequest.displayOrder() : 0);
+        }
+
+    }
 }

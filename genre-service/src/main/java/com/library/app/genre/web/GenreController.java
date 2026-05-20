@@ -19,15 +19,20 @@ public class GenreController {
         this.genreService = genreService;
     }
 
-    @PostMapping
-    public ResponseEntity<GenreResponse> addGenre(@RequestBody @Valid GenreRequest genreRequest) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(genreService.createGenre(genreRequest));
-    }
+        @PostMapping
+        public ResponseEntity<GenreResponse> addGenre(@RequestBody @Valid GenreRequest genreRequest) {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(genreService.createGenre(genreRequest));
+        }
 
-    @GetMapping
-    public ResponseEntity<?> getAllGenres() {
-        return ResponseEntity.ok(genreService.getAllGenres());
+        @GetMapping
+        public ResponseEntity<?> getAllGenres() {
+            return ResponseEntity.ok(genreService.getAllGenres());
+        }
+
+        @PutMapping
+        public ResponseEntity<GenreResponse> updateGenre(@RequestBody @Valid GenreRequest genreRequest) {
+            return ResponseEntity.ok(genreService.updateGenre(genreRequest));
+        }
     }
-}
