@@ -1,11 +1,13 @@
 package com.library.app.book.service;
 
+import com.library.app.book.client.GenreClient;
 import com.library.app.book.exception.BookException;
 import com.library.app.book.model.Book;
 import com.library.app.book.repository.BookRepository;
 import com.library.app.book.service.mapper.BookMapper;
 import com.library.app.book.web.dto.BookRequest;
 import com.library.app.book.web.dto.BookResponse;
+import com.library.app.book.web.dto.GenreResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -22,32 +24,35 @@ import java.util.UUID;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final GenreClient genreClient;
+    private final BookMapper bookMapper;
 
     public Page<BookResponse> getAllBooks(Pageable pageable) {
         Page<Book> bookPage = bookRepository.findAll(pageable);
 
-        return bookPage.map(BookMapper :: getBookResponse);
+        return bookPage.map(bookMapper :: getBookResponse);
     }
 
     public Page<BookResponse> getAllAvailableBooks(Pageable pageable) {
         Page<Book> bookPage = bookRepository.findBooksByActiveTrue(pageable);
 
-        return bookPage.map(BookMapper :: getBookResponse);
+        return bookPage.map(bookMapper :: getBookResponse);
     }
 
     public BookResponse createBook(BookRequest bookRequest) {
-        Book book = BookMapper.getBook(bookRequest);
+        GenreResponse genre = genreClient.getGenreByName(bookRequest.genreName());
+        Book book = bookMapper.getBook(bookRequest, genre.id());
 
         saveBook(book);
         log.info("Book created {} successfully", book.getTitle());
 
-        return BookMapper.getBookResponse(book);
+        return bookMapper.getBookResponse(book);
     }
 
     public BookResponse getBookById(@NonNull UUID id) {
         Book book = getBook(id);
 
-        return BookMapper.getBookResponse(book);
+        return bookMapper.getBookResponse(book);
     }
 
     private @NonNull Book getBook(@NonNull UUID id) {
@@ -57,18 +62,19 @@ public class BookService {
     public BookResponse getBookByIsbn(@NonNull String isbn) {
         Book book = bookRepository.findByIsbn(isbn).orElseThrow(() -> new BookException("Book not found with isbn: " + isbn));
 
-        return BookMapper.getBookResponse(book);
+        return bookMapper.getBookResponse(book);
     }
 
     public BookResponse updateBook(@NonNull UUID id, BookRequest bookRequest) {
+        GenreResponse genre = genreClient.getGenreByName(bookRequest.genreName());
         Book book = getBook(id);
 
-        BookMapper.updateBook(bookRequest, book);
+        bookMapper.updateBook(bookRequest, book, genre.id());
 
         saveBook(book);
         log.info("Book updated {} successfully", book.getTitle());
 
-        return BookMapper.getBookResponse(book);
+        return bookMapper.getBookResponse(book);
     }
 
     private void saveBook(Book book) {

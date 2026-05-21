@@ -21,7 +21,7 @@ public record BookRequest(
         String author,
 
         @NotBlank(message = "Genre is required")
-        UUID genreId,
+        String genreName,
 
         @Size(max = 100, message = "Publisher must be less than 100 characters")
         String publisher,
