@@ -36,4 +36,18 @@ public class BookMapper {
                 book.getPrice(),
                 book.getCoverImageUrl());
     }
+
+    public static void updateBook(BookRequest bookRequest, Book book) {
+        book.setIsbn(bookRequest.isbn());
+        book.setTitle(bookRequest.title());
+        book.setAuthor(bookRequest.author());
+        book.setGenreId(bookRequest.genreId());
+        book.setPublisher(bookRequest.publisher());
+        book.setLanguage(bookRequest.language());
+        book.setDescription(bookRequest.description());
+        book.setPublicationDate(bookRequest.publicationDate());
+        book.setPages(bookRequest.pages());
+        book.setPrice(bookRequest.price());
+        book.setCoverImageUrl(bookRequest.coverImageUrl());
+    }
 }
