@@ -31,7 +31,8 @@ public record BookRequest(
 
         LocalDate publicationDate,
 
-        @Size(min = 100, max = 50000, message = "Pages must be between 100 and 50000")
+        @Min(value = 100, message = "Pages must be at least 100")
+        @Max(value = 50000, message = "Pages cannot exceed 50000")
         Integer pages,
 
         @Size(max = 2000, message = "Description must be less than 2000 characters")
@@ -43,6 +44,6 @@ public record BookRequest(
         Integer availableCopies,
         BigDecimal price,
 
-        @Max(500)
+        @Size(max = 500, message = "Cover image URL must be less than 500 characters")
         String coverImageUrl
 ) {}

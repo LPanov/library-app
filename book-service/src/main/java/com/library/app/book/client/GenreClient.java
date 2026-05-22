@@ -10,6 +10,6 @@ import java.util.UUID;
 @HttpExchange("/api/v1/genres")
 public interface GenreClient {
 
-    @GetExchange()
+    @GetExchange("/{name}")
     GenreResponse getGenreByName(@PathVariable String name);
 }

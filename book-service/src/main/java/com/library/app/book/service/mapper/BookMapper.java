@@ -30,6 +30,7 @@ public class BookMapper {
                 .copies(bookRequest.copies())
                 .availableCopies(bookRequest.copies())
                 .coverImageUrl(bookRequest.coverImageUrl())
+                .active(true)
                 .build();
     }
 
