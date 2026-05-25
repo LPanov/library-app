@@ -60,4 +60,9 @@ public class GenreService {
     }
 
 
+    public GenreResponse getGenreByName(String name) {
+        Genre genre = genreRepository.findGenreByName(name).orElseThrow(() -> new GenreException("Genre "+name+" was not found"));
+
+        return getGenreResponse(genre);
+    }
 }

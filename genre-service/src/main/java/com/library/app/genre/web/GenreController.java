@@ -35,4 +35,9 @@ public class GenreController {
         public ResponseEntity<GenreResponse> updateGenre(@RequestBody @Valid GenreRequest genreRequest) {
             return ResponseEntity.ok(genreService.updateGenre(genreRequest));
         }
+
+        @GetMapping("/{name}")
+        public ResponseEntity<GenreResponse> getGenreByName(@PathVariable String name) {
+            return ResponseEntity.ok(genreService.getGenreByName(name));
+        }
     }
