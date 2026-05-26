@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +41,11 @@ public class BookService {
     }
 
     public BookResponse createBook(BookRequest bookRequest) {
+
+        if (bookRepository.existsByIsbn(bookRequest.isbn())) {
+            throw new BookException("Book with isbn: " + bookRequest.isbn() + " already exists");
+        }
+
         GenreResponse genre = genreClient.getGenreByName(bookRequest.genreName());
         Book book = bookMapper.getBook(bookRequest, genre.id());
 
@@ -47,6 +53,15 @@ public class BookService {
         log.info("Book created {} successfully", book.getTitle());
 
         return bookMapper.getBookResponse(book);
+    }
+
+    public List<BookResponse> createBookBulk(List<BookRequest> bookRequests) {
+
+        List<BookResponse> bookResponses = new ArrayList<>();
+
+        bookRequests.forEach(bookRequest -> bookResponses.add(createBook(bookRequest)));
+
+        return bookResponses;
     }
 
     public BookResponse getBookById(@NonNull UUID id) {
@@ -65,9 +80,9 @@ public class BookService {
         return bookMapper.getBookResponse(book);
     }
 
-    public BookResponse updateBook(@NonNull UUID id, BookRequest bookRequest) {
+    public BookResponse updateBook(BookRequest bookRequest) {
         GenreResponse genre = genreClient.getGenreByName(bookRequest.genreName());
-        Book book = getBook(id);
+        Book book = bookRepository.findByIsbn(bookRequest.isbn()).orElseThrow(() -> new BookException("Book not found with isbn: " + bookRequest.isbn()));
 
         bookMapper.updateBook(bookRequest, book, genre.id());
 
