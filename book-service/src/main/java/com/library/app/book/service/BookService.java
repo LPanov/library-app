@@ -8,12 +8,15 @@ import com.library.app.book.service.mapper.BookMapper;
 import com.library.app.book.web.dto.BookRequest;
 import com.library.app.book.web.dto.BookResponse;
 import com.library.app.book.web.dto.GenreResponse;
+import com.library.app.book.web.dto.SearchBookRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +31,17 @@ public class BookService {
     private final GenreClient genreClient;
     private final BookMapper bookMapper;
 
-    public Page<BookResponse> getAllBooks(Pageable pageable) {
+    public Page<BookResponse> getAllBooks() {
+        Pageable pageable = createPageable(100, 10, "id", "asc");
+
         Page<Book> bookPage = bookRepository.findAll(pageable);
 
         return bookPage.map(bookMapper :: getBookResponse);
     }
 
-    public Page<BookResponse> getAllAvailableBooks(Pageable pageable) {
+    public Page<BookResponse> getAllAvailableBooks() {
+        Pageable pageable = createPageable(100, 10, "id", "asc");
+
         Page<Book> bookPage = bookRepository.findBooksByActiveTrue(pageable);
 
         return bookPage.map(bookMapper :: getBookResponse);
@@ -74,15 +81,13 @@ public class BookService {
         return bookRepository.findById(id).orElseThrow(() -> new BookException("Book not found with id: " + id));
     }
 
-    public BookResponse getBookByIsbn(@NonNull String isbn) {
-        Book book = bookRepository.findByIsbn(isbn).orElseThrow(() -> new BookException("Book not found with isbn: " + isbn));
-
-        return bookMapper.getBookResponse(book);
+    public Book getBookByIsbn(@NonNull String isbn) {
+        return bookRepository.findByIsbn(isbn).orElseThrow(() -> new BookException("Book not found with isbn: " + isbn));
     }
 
     public BookResponse updateBook(BookRequest bookRequest) {
         GenreResponse genre = genreClient.getGenreByName(bookRequest.genreName());
-        Book book = bookRepository.findByIsbn(bookRequest.isbn()).orElseThrow(() -> new BookException("Book not found with isbn: " + bookRequest.isbn()));
+        Book book = getBookByIsbn(bookRequest.isbn());
 
         bookMapper.updateBook(bookRequest, book, genre.id());
 
@@ -96,9 +101,41 @@ public class BookService {
         bookRepository.save(book);
     }
 
-    public void deleteBook(@NonNull UUID id) {
+    public void deleteBook(String isbn) {
+        Book book = getBookByIsbn(isbn);
+        book.setActive(false);
+
+        saveBook(book);
+    }
+
+    public void hardDeleteBook(@NonNull UUID id) {
         Book book = getBook(id);
+
         bookRepository.delete(book);
+    }
+
+    public Page<BookResponse> searchBooksWithFilters(SearchBookRequest searchBookRequest) {
+        GenreResponse genre = searchBookRequest.genreName() != null ? genreClient.getGenreByName(searchBookRequest.genreName()) : null;
+        Pageable pageable = createPageable(searchBookRequest.page(), searchBookRequest.size(), searchBookRequest.sortBy(), searchBookRequest.sortDirection());
+
+        Page<Book> bookPage = bookRepository.globalSearchWithGenre(pageable, searchBookRequest.searchTerm(), genre != null ? genre.id() : null);
+
+        return bookPage.map(bookMapper::getBookResponse);
+
+    }
+
+    private Pageable createPageable(int page, int size, String sortBy, String sortDirection) {
+        size=Math.min(size, 10);
+        size=Math.max(size, 1);
+
+        if (sortBy == null || sortBy.isBlank()) {
+            sortBy = "id";
+        }
+        Sort sort = "asc".equalsIgnoreCase(sortDirection)
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        return PageRequest.of(page, size, sort);
     }
 
 
