@@ -5,10 +5,7 @@ import com.library.app.book.exception.BookException;
 import com.library.app.book.model.Book;
 import com.library.app.book.repository.BookRepository;
 import com.library.app.book.service.mapper.BookMapper;
-import com.library.app.book.web.dto.BookRequest;
-import com.library.app.book.web.dto.BookResponse;
-import com.library.app.book.web.dto.GenreResponse;
-import com.library.app.book.web.dto.SearchBookRequest;
+import com.library.app.book.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -71,18 +68,18 @@ public class BookService {
         return bookResponses;
     }
 
-    public BookResponse getBookById(@NonNull UUID id) {
-        Book book = getBook(id);
-
-        return bookMapper.getBookResponse(book);
-    }
-
     private @NonNull Book getBook(@NonNull UUID id) {
         return bookRepository.findById(id).orElseThrow(() -> new BookException("Book not found with id: " + id));
     }
 
     public Book getBookByIsbn(@NonNull String isbn) {
         return bookRepository.findByIsbn(isbn).orElseThrow(() -> new BookException("Book not found with isbn: " + isbn));
+    }
+
+    public BookResponse getBookByISBN(@NonNull String isbn) {
+        Book book = bookRepository.findByIsbn(isbn).orElseThrow(() -> new BookException("Book not found with isbn: " + isbn));
+
+        return bookMapper.getBookResponse(book);
     }
 
     public BookResponse updateBook(BookRequest bookRequest) {
@@ -136,6 +133,12 @@ public class BookService {
                 : Sort.by(sortBy).descending();
 
         return PageRequest.of(page, size, sort);
+    }
+
+    public BookStatsResponse getBookStats() {
+        Long totalBooks = (Long) bookRepository.count();
+        Long totalActiveBooks = bookRepository.countBooksByActiveTrue();
+        return new BookStatsResponse(totalBooks, totalActiveBooks);
     }
 
 
