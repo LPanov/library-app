@@ -42,7 +42,7 @@ public class User {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    private AuthProvider authProvider = AuthProvider.LOCAL;
+    private AuthProvider authProvider;
 
     @Column(name = "google_id")
     private String googleId;
