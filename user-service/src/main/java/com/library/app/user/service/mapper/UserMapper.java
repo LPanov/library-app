@@ -4,6 +4,8 @@ import com.library.app.user.domain.AuthProvider;
 import com.library.app.user.model.Role;
 import com.library.app.user.model.User;
 import com.library.app.user.web.dto.UserRequest;
+import com.library.app.user.web.dto.UserResponse;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -23,5 +25,17 @@ public class UserMapper {
                 .isActive(true)
                 .lastLogin(LocalDateTime.now())
                 .build();
+    }
+
+    public UserResponse getUserResponse(User createdUser) {
+        return new UserResponse(
+                createdUser.getId(),
+                createdUser.getEmail(),
+                createdUser.getPassword(),
+                createdUser.getPhone(),
+                createdUser.getFullName(),
+                createdUser.getRole(),
+                createdUser.getUsername()
+        );
     }
 }
