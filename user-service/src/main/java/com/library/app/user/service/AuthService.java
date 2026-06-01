@@ -2,6 +2,7 @@ package com.library.app.user.service;
 
 import com.library.app.user.config.JwtProvider;
 import com.library.app.user.event.PasswordResetEvent;
+import com.library.app.user.exceptions.TokenException;
 import com.library.app.user.exceptions.UserException;
 import com.library.app.user.model.PasswordResetToken;
 import com.library.app.user.model.User;
@@ -9,6 +10,7 @@ import com.library.app.user.repository.PasswordResetTokenRepository;
 import com.library.app.user.service.mapper.UserMapper;
 import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -68,6 +70,7 @@ public class AuthService {
         return new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
     }
 
+    @Transactional
     public AuthResponse register(UserRequest userRequest) {
         if (userService.existsByEmail(userRequest.email())) {
             throw new UserException("User with such email already exists");
@@ -95,10 +98,11 @@ public class AuthService {
     }
 
 
+    @Transactional
     public void createPasswordResetToken(String email) {
         User user = userService.findByUsername(email);
 
-        String frontendUrl = "";
+        String frontendUrl = "http://localhost:5173/reset-password?token=";
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken passwordResetToken = PasswordResetToken.builder()
@@ -116,8 +120,20 @@ public class AuthService {
 
     }
 
+    @Transactional
     public void resetPassword(String token, String newPassword) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenException("Token not valid"));
 
+        if (passwordResetToken.isExpired()) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            throw new TokenException("Token has expired");
+        }
+
+        User user = passwordResetToken.getUser();
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userService.saveUser(user);
     }
 
 }
