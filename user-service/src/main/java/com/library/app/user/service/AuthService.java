@@ -1,12 +1,16 @@
 package com.library.app.user.service;
 
 import com.library.app.user.config.JwtProvider;
+import com.library.app.user.event.PasswordResetEvent;
 import com.library.app.user.exceptions.UserException;
+import com.library.app.user.model.PasswordResetToken;
 import com.library.app.user.model.User;
+import com.library.app.user.repository.PasswordResetTokenRepository;
 import com.library.app.user.service.mapper.UserMapper;
 import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +29,8 @@ public class AuthService {
     private final UserMapper userMapper;
     private final JwtProvider jwtProvider;
     private final UserService userService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public AuthResponse login(String username, String password) {
         Authentication authentication = authenticate(username, password);
@@ -90,6 +97,23 @@ public class AuthService {
 
     public void createPasswordResetToken(String email) {
         User user = userService.findByUsername(email);
+
+        String frontendUrl = "";
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusMinutes(5))
+                .token(token)
+                .build();
+
+        passwordResetTokenRepository.save(passwordResetToken);
+        String resetLink=frontendUrl+token;
+
+        PasswordResetEvent event = new PasswordResetEvent(email, resetLink);
+
+        kafkaTemplate.send("password-reset-events", event);
+
     }
 
     public void resetPassword(String token, String newPassword) {
