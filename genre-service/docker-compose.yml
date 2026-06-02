@@ -1,6 +1,5 @@
-version: '4'
 services:
-  inventory-db:
+  mysql-db:
     image: mysql:latest
     container_name: mysql-gs
     environment:
@@ -11,3 +10,24 @@ services:
     volumes:
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/mysql/data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql" ]
+      timeout: 5s
+      retries: 5
+      interval: 10s
+
+  genre-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: genre-service-app
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/genre_service?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=mysql
+      - spring.datasource.hikari.connection-timeout=45000
+      - spring.datasource.hikari.initialization-fail-timeout=45000
