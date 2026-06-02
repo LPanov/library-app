@@ -50,8 +50,8 @@ public class BookController {
         return ResponseEntity.ok(bookService.getAllAvailableBooks());
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<BookResponse>> searchBooks(@NonNull SearchBookRequest searchBookRequest) {
+    @PostMapping("/search")
+    public ResponseEntity<Page<BookResponse>> searchBooks(@RequestBody @NonNull SearchBookRequest searchBookRequest) {
         return ResponseEntity.ok(bookService.searchBooksWithFilters(searchBookRequest));
     }
 
@@ -77,8 +77,8 @@ public class BookController {
 
     }
 
-    @DeleteMapping("/{isbn}")
-    public ResponseEntity<ApiResponse> deleteBook(@PathVariable String isbn) {
+    @DeleteMapping
+    public ResponseEntity<ApiResponse> deleteBook(@RequestParam String isbn) {
         bookService.deleteBook(isbn);
         return ResponseEntity.ok(new ApiResponse("Book deleted successfully", true));
     }

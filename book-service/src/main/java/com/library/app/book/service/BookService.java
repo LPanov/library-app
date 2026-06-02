@@ -29,7 +29,7 @@ public class BookService {
     private final BookMapper bookMapper;
 
     public Page<BookResponse> getAllBooks() {
-        Pageable pageable = createPageable(100, 10, "id", "asc");
+        Pageable pageable = createPageable(0, 10, "id", "asc");
 
         Page<Book> bookPage = bookRepository.findAll(pageable);
 
@@ -37,7 +37,7 @@ public class BookService {
     }
 
     public Page<BookResponse> getAllAvailableBooks() {
-        Pageable pageable = createPageable(100, 10, "id", "asc");
+        Pageable pageable = createPageable(0, 10, "id", "asc");
 
         Page<Book> bookPage = bookRepository.findBooksByActiveTrue(pageable);
 
