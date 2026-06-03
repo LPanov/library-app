@@ -1,5 +1,6 @@
 package com.library.app.user.service;
 
+import com.library.app.user.config.AdminProperties;
 import com.library.app.user.config.JwtProvider;
 import com.library.app.user.event.PasswordResetEvent;
 import com.library.app.user.exceptions.TokenException;
@@ -33,6 +34,7 @@ public class AuthService {
     private final UserService userService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final AdminProperties adminProperties;
 
     public AuthResponse login(String username, String password) {
         Authentication authentication = authenticate(username, password);
@@ -78,7 +80,11 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(userRequest.password());
 
-        User createdUser = userMapper.getUser(userRequest, encodedPassword);
+        User createdUser = adminProperties
+                        .getAdminEmails()
+                        .contains(userRequest.email()) ?
+                        userMapper.mapAdmin(userRequest, encodedPassword) :
+                        userMapper.getUser(userRequest, encodedPassword);
 
         userService.saveUser(createdUser);
 

@@ -27,6 +27,21 @@ public class UserMapper {
                 .build();
     }
 
+    public User mapAdmin(UserRequest userRequest, String encodedPassword) {
+        return User.builder()
+                .email(userRequest.email())
+                .username(userRequest.username())
+                .password(encodedPassword)
+                .fullName(userRequest.fullName())
+                .phone(userRequest.phone())
+                .profileImage(userRequest.profileImage())
+                .role(Role.ADMIN)
+                .authProvider(AuthProvider.LOCAL)
+                .isActive(true)
+                .lastLogin(LocalDateTime.now())
+                .build();
+    }
+
     public UserResponse getUserResponse(User createdUser) {
         return new UserResponse(
                 createdUser.getId(),
