@@ -15,12 +15,14 @@ import java.util.*;
 @Service
 public class JwtProvider {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    @Value("${jwt.header}")
-    private String jwtHeader;
+    private final String jwtHeader;
+    private final SecretKey key;
 
-    SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    public JwtProvider(@Value("${jwt.secret}") String jwtSecret,
+                       @Value("${jwt.header}") String jwtHeader) {
+        this.jwtHeader = jwtHeader;
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateToken(Authentication authentication) {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();

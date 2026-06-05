@@ -6,11 +6,14 @@ import com.library.app.user.event.PasswordResetEvent;
 import com.library.app.user.exceptions.TokenException;
 import com.library.app.user.exceptions.UserException;
 import com.library.app.user.model.PasswordResetToken;
+import com.library.app.user.model.Role;
 import com.library.app.user.model.User;
 import com.library.app.user.repository.PasswordResetTokenRepository;
 import com.library.app.user.service.mapper.UserMapper;
 import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -22,8 +25,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -49,6 +54,8 @@ public class AuthService {
 
         user.setLastLogin(LocalDateTime.now());
         userService.saveUser(user);
+
+        log.info("User logged in: {}", username);
 
         return new AuthResponse(
                 token,
@@ -88,8 +95,12 @@ public class AuthService {
 
         userService.saveUser(createdUser);
 
+        log.info("User registered: {}", createdUser.getEmail());
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-            createdUser.getEmail(), createdUser.getPassword()
+                createdUser.getEmail(),
+                null,
+                List.of(new SimpleGrantedAuthority("USER"))
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -106,7 +117,7 @@ public class AuthService {
 
     @Transactional
     public void createPasswordResetToken(String email) {
-        User user = userService.findByUsername(email);
+        User user = userService.findByEmail(email);
 
         String frontendUrl = "http://localhost:5173/reset-password?token=";
 
@@ -123,6 +134,7 @@ public class AuthService {
         PasswordResetEvent event = new PasswordResetEvent(email, resetLink);
 
         kafkaTemplate.send("password-reset-events", event);
+        log.info("Password reset token created for user: {}", email);
 
     }
 
@@ -140,6 +152,7 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(encodedPassword);
         userService.saveUser(user);
+        log.info("Password reset for user: {}", user.getEmail());
     }
 
 }
