@@ -30,3 +30,11 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local-cluster'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9092'
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notication-service-app
+    ports:
+      - "8084:8084"
