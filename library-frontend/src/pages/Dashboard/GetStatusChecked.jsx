@@ -2,7 +2,7 @@ import { Chip } from "@mui/material";
 
 import React from 'react'
 
-const GetStatusChip = ({status}) => {
+const GetStatusChecked = ({status}) => {
   const configs = {
     ACTIVE: { label: "Active", color: "success" },
     OVERDUE: { label: "Overdue", color: "error" },
@@ -14,4 +14,4 @@ const GetStatusChip = ({status}) => {
   return <Chip label={config.label} color={config.color} size="small" />;
 }
 
-export default GetStatusChip
+export default GetStatusChecked
