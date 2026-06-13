@@ -1,20 +1,15 @@
 import React from 'react';
-import { Avatar, Box, Typography, List, ListItem, ListItemIcon, ListItemText, Tooltip, ListItemButton, alpha, Divider } from '@mui/material';
+import { Avatar, Box, Typography, List, ListItem, ListItemIcon, ListItemText, Tooltip, ListItemButton, Divider } from '@mui/material';
 import MenuBook from '@mui/icons-material/MenuBook';
 import { navigationItems, secondaryItems } from './NavigationItems';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Logout from '@mui/icons-material/Logout';
+import { isActive } from './util';
+import { alpha } from '@mui/material/styles';
 
 const SidebarDrawer = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === "/";
-    }
-    return location.pathname.startsWith(path);
-  };
 
   const handleChangePath = (path) => {
     navigate(path);
@@ -100,7 +95,7 @@ const SidebarDrawer = () => {
         {/* Main Navigation Items */}
         <List disablePadding>
           {navigationItems.map((item, index) => {
-            const active = isActive(item.path);
+            const active = isActive(item.path, location);
             return (
               <ListItem key={index} disablePadding sx={{ mb: 0.25 }}>
                 <Tooltip title={item.title} placement="right">
@@ -159,7 +154,7 @@ const SidebarDrawer = () => {
         {/* Secondary Navigation Items */}
         <List disablePadding>
           {secondaryItems.map((item, index) => {
-            const active = isActive(item.path);
+            const active = isActive(item.path,location);
             return (
               <ListItem key={index} disablePadding sx={{ mb: 0.25 }}>
                 <Tooltip title={item.title} placement="right">
