@@ -25,7 +25,7 @@ export const secondaryItems = [
 export const navigationItems = [
   {
     title: 'Dashboard',
-    path: '/',
+    path: '/dashboard',
     icon: <DashboardIcon />,
     description: 'Overview & Stats',
   },

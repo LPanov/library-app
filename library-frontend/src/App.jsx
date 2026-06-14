@@ -11,17 +11,21 @@ import Fines from './pages/Fines/Fines'
 import Wishlist from './pages/Reservations/Wishlist'
 import Subscriptions from './pages/Subscriptions/Subscriptions'
 import Profile from './pages/User/Profile'
+import Home from './pages/Home/Home'
 
 function App() {
-
   return (
     <>    
     <Routes>
+      {/* 💡 FIXED: Home page is now standalone (no sidebar or navbar) */}
+      <Route path="/" element={<Home />} />
+
+      {/* All routes inside this block will automatically display the UserLayout */}
       <Route element={<UserLayout />}>
         {/* user routes */}
-        <Route path="" element={<Dashboard />} />
-        <Route path="settings" element={<UserLayout />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<UserLayout />} /> {/* Note: You might want to change this element to a Settings component later! */}
+        <Route path="/profile" element={<Profile />} />
         <Route path="/books" element={<Books />} />
         <Route path="/loans" element={<Loans />} />
         <Route path="/fines" element={<Fines />} />
