@@ -12,6 +12,7 @@ import Wishlist from './pages/Reservations/Wishlist'
 import Subscriptions from './pages/Subscriptions/Subscriptions'
 import Profile from './pages/User/Profile'
 import Home from './pages/Home/Home'
+import Login from './pages/Home/Login'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
     <Routes>
       {/* 💡 FIXED: Home page is now standalone (no sidebar or navbar) */}
       <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
 
       {/* All routes inside this block will automatically display the UserLayout */}
       <Route element={<UserLayout />}>
