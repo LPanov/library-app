@@ -7,6 +7,8 @@ services:
       MYSQL_DATABASE: genre_service
     ports:
       - "3308:3306"
+    networks:
+      - shared-network
     volumes:
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/mysql/data:/var/lib/mysql
@@ -23,6 +25,8 @@ services:
     container_name: genre-service-app
     ports:
       - "8081:8081"
+    networks:
+      - shared-network
     depends_on:
       - mysql-db
     environment:
@@ -31,3 +35,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=mysql
       - spring.datasource.hikari.connection-timeout=45000
       - spring.datasource.hikari.initialization-fail-timeout=45000
+
+networks:
+  shared-network:
+    external: true
+    name: library-app-network
