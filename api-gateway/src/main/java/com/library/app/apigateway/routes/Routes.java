@@ -14,11 +14,11 @@ public class Routes {
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("genre_service", r -> r.path("/api/v1/genres")
+                .route("genre_service", r -> r.path("/api/v1/genres", "/api/v1/genres/**")
                         .filters(f -> f.circuitBreaker(config -> config
                                 .setName("genreServiceCircuitBreaker")
                                 .setFallbackUri("forward:/fallbackRoute")))
-                        .uri("http://localhost:8081"))
+                        .uri("http://genre-service-app:8081"))
 
                 .route("book_service", r -> r.path("/api/v1/book")
                         .filters(f -> f.circuitBreaker(config -> config

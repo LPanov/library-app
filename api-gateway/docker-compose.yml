@@ -12,7 +12,7 @@ services:
       MYSQL_USER: keycloak
       MYSQL_PASSWORD: password
     networks:
-      - keycloak-network
+      - shared-network
     ports:
       - "3310:3306"
     healthcheck:
@@ -31,16 +31,34 @@ services:
       KC_DB_PASSWORD: password
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
     ports:
       - "8181:8080"
     volumes:
       - ./docker/keycloak/realms/:/opt/keycloak/data/import/
     networks:
-      - keycloak-network
+      - shared-network
     depends_on:
       keycloak-mysql:
         condition: service_healthy
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-gateway-app
+    ports:
+      - "9000:9000"
+    networks:
+      - shared-network
+    environment:
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8080/realms/spring-microservices-security-realm
+    depends_on:
+      keycloak:
+        condition: service_started
+
 networks:
-  keycloak-network:
-    driver: bridge
+  shared-network:
+    external: true
+    name: library-app-network
