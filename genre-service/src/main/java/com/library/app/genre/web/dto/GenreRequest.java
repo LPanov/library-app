@@ -1,5 +1,6 @@
 package com.library.app.genre.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -12,6 +13,8 @@ public record GenreRequest(
         String name,
         @Length(max = 500, message = "Description cannot be more than 500 characters")
         String description,
+
+        @JsonProperty("display_order")
         @Min(value = 0, message = "Display order cannot be negative")
         Integer displayOrder) {
 }
