@@ -1,5 +1,6 @@
-$content = @"
 # Library Hub 📚
+
+<img width="1427" height="846" alt="image" src="https://github.com/user-attachments/assets/89b2a7e6-c194-4048-abbf-145bedd9f61f" />
 
 A distributed, full-stack microservices application designed for comprehensive library management and user reading metrics. Built with a decoupled **Spring Boot** backend ecosystem and a modern **React** frontend, the system utilizes centralized API routing, event-driven communication, and docker containerization.
 
@@ -23,6 +24,8 @@ The application is built using a **Database-per-Service** pattern to ensure loos
 ### Frontend
 - **Framework**: React.js
 - **Styling**: Modern CSS UI with reactive dashboards
+<img width="1895" height="821" alt="image" src="https://github.com/user-attachments/assets/2980c6c3-a5f1-40be-b4be-5beb31c83020" />
+
 
 ### Backend Microservices (Spring Boot)
 - **API Gateway**: Spring Cloud Gateway
