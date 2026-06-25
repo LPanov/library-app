@@ -20,11 +20,11 @@ public class Routes {
                                 .setFallbackUri("forward:/fallbackRoute")))
                         .uri("http://genre-service-app:8081"))
 
-                .route("book_service", r -> r.path("/api/v1/book")
+                .route("book_service", r -> r.path("/api/v1/book\", \"/api/v1/book/**")
                         .filters(f -> f.circuitBreaker(config -> config
                                 .setName("bookServiceCircuitBreaker")
                                 .setFallbackUri("forward:/fallbackRoute")))
-                        .uri("http://localhost:8082"))
+                        .uri("http://book-service-app:8082"))
 
                 .build();
     }
