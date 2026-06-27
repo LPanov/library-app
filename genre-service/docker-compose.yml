@@ -27,6 +27,8 @@ services:
       - "8081:8081"
     networks:
       - shared-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -36,7 +38,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=mysql
       - spring.datasource.hikari.connection-timeout=45000
       - spring.datasource.hikari.initialization-fail-timeout=45000
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://localhost:8181/realms/spring-microservices-security-realm
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://identity-provider:8181/realms/spring-microservices-security-realm
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/spring-microservices-security-realm/protocol/openid-connect/certs
 
 networks:
