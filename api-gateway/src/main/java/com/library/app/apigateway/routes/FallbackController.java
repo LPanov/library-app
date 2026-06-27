@@ -14,6 +14,6 @@ public class FallbackController {
     public ResponseEntity<String> fallback() {
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body("The genre service is taking too long to respond or is down. Please try again.");
+                .body("The service is taking too long to respond or is down. Please try again.");
     }
 }
