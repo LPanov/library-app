@@ -7,5 +7,40 @@ services:
       MYSQL_DATABASE: user_service
     ports:
       - "3309:3306"
+    networks:
+      - shared-network
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql" ]
+      timeout: 5s
+      retries: 5
+      interval: 10s
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-service-app
+    ports:
+      - "8083:8083"
+    networks:
+      - shared-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user-db:3306/user_service?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=mysql
+      - spring.datasource.hikari.connection-timeout=45000
+      - spring.datasource.hikari.initialization-fail-timeout=45000
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://identity-provider:8181/realms/spring-microservices-security-realm
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/spring-microservices-security-realm/protocol/openid-connect/certs
+
+networks:
+  shared-network:
+    external: true
+    name: library-app-network
