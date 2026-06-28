@@ -26,6 +26,12 @@ public class Routes {
                                 .setFallbackUri("forward:/fallbackRoute")))
                         .uri("http://book-service-app:8082"))
 
+                .route("user_service", r -> r.path("/api/v1/user", "/api/v1/user/**")
+                        .filters(f -> f.circuitBreaker(config -> config
+                                .setName("userServiceCircuitBreaker")
+                                .setFallbackUri("forward:/fallbackRoute")))
+                        .uri("http://user-service-app:8083"))
+
                 .build();
     }
 }
