@@ -34,36 +34,10 @@ import java.util.UUID;
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
     private final JwtProvider jwtProvider;
     private final UserService userService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final AdminProperties adminProperties;
-
-    public AuthResponse login(String username, String password) {
-        Authentication authentication = authenticate(username, password);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-//        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-//        String role = authorities.iterator().next().getAuthority();
-
-        String token = jwtProvider.generateToken(authentication);
-
-        User user = userService.findByUsername(username);
-
-        user.setLastLogin(LocalDateTime.now());
-        userService.saveUser(user);
-
-        log.info("User logged in: {}", username);
-
-        return new AuthResponse(
-                token,
-                String.format("Welcome back %s!", username),
-                "Login Success",
-                userMapper.getUserResponse(user)
-        );
-    }
 
     private Authentication authenticate(String username, String password) {
         UserDetails userDetails = userService.loadUserByUsername(username);
@@ -77,41 +51,6 @@ public class AuthService {
         }
 
         return new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
-    }
-
-    @Transactional
-    public AuthResponse register(UserRequest userRequest) {
-        if (userService.existsByEmail(userRequest.email())) {
-            throw new UserException("User with such email already exists");
-        }
-
-        String encodedPassword = passwordEncoder.encode(userRequest.password());
-
-        User createdUser = adminProperties
-                        .getAdminEmails()
-                        .contains(userRequest.email()) ?
-                        userMapper.mapAdmin(userRequest, encodedPassword) :
-                        userMapper.getUser(userRequest, encodedPassword);
-
-        userService.saveUser(createdUser);
-
-        log.info("User registered: {}", createdUser.getEmail());
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                createdUser.getEmail(),
-                null,
-                List.of(new SimpleGrantedAuthority("USER"))
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = jwtProvider.generateToken(authentication);
-
-        return new AuthResponse(
-                jwt,
-                "You registered successfully.",
-                String.format("Welcome %s!", createdUser.getFullName()),
-                userMapper.getUserResponse(createdUser));
     }
 
 

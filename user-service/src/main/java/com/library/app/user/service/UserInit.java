@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 public class UserInit implements CommandLineRunner {
 
     private final UserService userService;
-    private final AuthService authService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -27,6 +26,6 @@ public class UserInit implements CommandLineRunner {
                 null
         );
 
-        authService.register(registerRequest);
+        userService.register(registerRequest);
     }
 }

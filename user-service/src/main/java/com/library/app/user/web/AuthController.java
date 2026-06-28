@@ -18,18 +18,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid UserRequest userRequest) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(authService.register(userRequest));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest.username(), loginRequest.password()));
-    }
-
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
         authService.createPasswordResetToken(forgotPasswordRequest.email());
