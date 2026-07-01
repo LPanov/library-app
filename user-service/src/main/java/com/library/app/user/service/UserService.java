@@ -1,14 +1,19 @@
 package com.library.app.user.service;
 
 import com.library.app.user.config.AdminProperties;
+import com.library.app.user.event.PasswordResetEvent;
+import com.library.app.user.exceptions.TokenException;
 import com.library.app.user.exceptions.UserException;
+import com.library.app.user.model.PasswordResetToken;
 import com.library.app.user.model.User;
+import com.library.app.user.repository.PasswordResetTokenRepository;
 import com.library.app.user.repository.UserRepository;
 import com.library.app.user.service.mapper.UserMapper;
 import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +38,8 @@ public class UserService implements UserDetailsService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AdminProperties adminProperties;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
     public User findByUsername(String username) {
@@ -108,5 +116,46 @@ public class UserService implements UserDetailsService {
                 String.format("Welcome %s!", createdUser.getFullName()),
                 userMapper.getUserResponse(createdUser));
     }
+
+    @Transactional
+    public void createPasswordResetToken(String email) {
+        User user = findByEmail(email);
+
+        String frontendUrl = "http://localhost:5173/reset-password?token=";
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusMinutes(5))
+                .token(token)
+                .build();
+
+        passwordResetTokenRepository.save(passwordResetToken);
+        String resetLink=frontendUrl+token;
+
+        PasswordResetEvent event = new PasswordResetEvent(email, resetLink);
+
+        kafkaTemplate.send("password-reset-events", event);
+        log.info("Password reset token created for user: {}", email);
+
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenException("Token not valid"));
+
+        if (passwordResetToken.isExpired()) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            throw new TokenException("Token has expired");
+        }
+
+        User user = passwordResetToken.getUser();
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        saveUser(user);
+        log.info("Password reset for user: {}", user.getEmail());
+    }
+
 
 }

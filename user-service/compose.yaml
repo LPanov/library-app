@@ -22,8 +22,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: user-service-app
-    ports:
-      - "8083:8083"
+#    ports:
+#      - "8083:8083"
     networks:
       - shared-network
     extra_hosts:
