@@ -6,6 +6,8 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+    networks:
+      - shared-network
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -29,11 +31,14 @@ services:
     container_name: kafka-ui
     ports:
       - "8181:8080"
+    networks:
+      - shared-network
     depends_on:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local-cluster'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
+
 
   notification-service:
     build:
@@ -42,5 +47,12 @@ services:
     container_name: notication-service-app
     ports:
       - "8084:8084"
+    networks:
+      - shared-network
     depends_on:
       - kafka
+
+networks:
+  shared-network:
+    external: true
+    name: library-app-network
