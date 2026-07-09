@@ -1,32 +1,51 @@
 import React, { useState } from 'react';
 import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import api from "../../config/keycloak";
+import { useNavigate } from 'react-router-dom'; 
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState(''); 
+  const [loading, setLoading] = useState(false); 
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Logging in with:', formData);
+    setError('');
+    setLoading(true);
+
+    try {
+      const payload = {
+        username: formData.email, 
+        password: formData.password
+      };
+
+      // 3. Send the POST request to your API Gateway via the configured client
+      const response = await api.post('/api/v1/user/login', payload);
+      
+      console.log('Login successful:', response.data);
+
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Invalid username or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col justify-center items-center p-4">
       
-      {/* Ambient decorative background glows */}
       <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-300/20 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-300/20 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="w-full max-w-md relative group z-10">
         
-        {/* Border glow effect matching the hero section card */}
         <div className="absolute -inset-1 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-3xl blur opacity-15 group-hover:opacity-25 transition duration-1000"></div>
 
-        {/* Core Main Panel */}
         <div className="relative bg-white border border-gray-100 shadow-xl rounded-3xl p-8 sm:p-10 flex flex-col">
           
-          {/* Logo / Brand Header */}
           <div className="flex flex-col items-center mb-8 text-center">
             <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100 mb-4">
               <BookOpen className="w-6 h-6" />
@@ -39,22 +58,26 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Form Content */}
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm font-medium text-red-600 text-center">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             
-            {/* Email Field */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
-                Email Address
+                Username or Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="w-5 h-5" />
                 </div>
                 <input
-                  type="email"
+                  type="text" 
                   required
-                  placeholder="name@example.com"
+                  placeholder="Enter your username or email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200"
@@ -62,7 +85,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <div className="flex justify-between items-center mb-1.5 ml-0.5">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -94,7 +116,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Remember Me Option */}
             <div className="flex items-center ml-0.5">
               <input
                 id="remember-me"
@@ -106,17 +127,17 @@ const Login = () => {
               </label>
             </div>
 
-            {/* Submit Sign In Button */}
+            {/* 6. Button disables itself during active network request */}
             <button
               type="submit"
-              className="w-full mt-2 inline-flex items-center justify-center px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg shadow-indigo-100 transition-all duration-200 gap-2 group"
+              disabled={loading}
+              className="w-full mt-2 inline-flex items-center justify-center px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold rounded-xl shadow-md hover:shadow-lg shadow-indigo-100 transition-all duration-200 gap-2 group cursor-pointer disabled:cursor-not-allowed"
             >
-              Sign In
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {loading ? 'Signing In...' : 'Sign In'}
+              {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
-          {/* Bottom Link Switcher */}
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}

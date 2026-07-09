@@ -2,9 +2,9 @@ import Keycloak from 'keycloak-js';
 import axios from 'axios';
 
 const keycloakConfig = {
-  url: 'http://localhost:8080', 
-  realm: 'your-realm-name',
-  clientId: 'your-react-frontend-client-id',
+  url: 'http://identity-provider:8181', 
+  realm: 'spring-microservices-security-realm',
+  clientId: 'spring-microservice',
 };
 
 export const keycloak = new Keycloak(keycloakConfig);

@@ -4,16 +4,15 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
-import { keycloak } from './keycloak'
+import { keycloak } from './config/keycloak'
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
 
-keycloak.init({ 
-  onLoad: 'login-required', // Forces login immediately, change to 'check-sso' for optional login
-  checkLoginIframe: false 
+keycloak.init({
+  onLoad: 'check-sso',
+  checkLoginIframe: false
 })
-.then((authenticated) => {
-  if (authenticated) {
+  .then(() => {
     root.render(
       <StrictMode>
         <BrowserRouter>
@@ -21,11 +20,15 @@ keycloak.init({
         </BrowserRouter>
       </StrictMode>
     );
-  } else {
-    window.location.reload();
-  }
-})
-.catch((err) => {
-  console.error("Keycloak initialization failed", err);
-});
+  })
+  .catch((err) => {
+    console.error("Keycloak initialization failed", err);
+    root.render(
+      <StrictMode>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </StrictMode>
+    );
+  });
 
