@@ -13,21 +13,23 @@ import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,6 +42,7 @@ public class UserService implements UserDetailsService {
     private final AdminProperties adminProperties;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final RestTemplate restTemplate;
 
 
     public User findByUsername(String username) {
@@ -76,8 +79,41 @@ public class UserService implements UserDetailsService {
     }
 
     public AuthResponse login(String username, String password) {
-
+        String keycloakUrl = "http://identity-provider:8080/realms/your-realm/protocol/openid-connect/token";
         User user = findByUsername(username);
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new UserException("Invalid credentials");
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "password");
+        map.add("client_id", "spring-microservice");
+        map.add("username", username);
+        map.add("password", password);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+
+        String jwtToken = "token";
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    keycloakUrl,
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            if (response.getBody() != null && response.getBody().containsKey("access_token")) {
+                jwtToken = (String) response.getBody().get("access_token");
+            }
+
+        } catch (Exception e) {
+            log.error("Keycloak authentication failed for user: {}", username, e);
+            throw new UserException("Authentication service unavailable or invalid client configuration");
+        }
 
         user.setLastLogin(LocalDateTime.now());
         saveUser(user);
@@ -85,7 +121,7 @@ public class UserService implements UserDetailsService {
         log.info("User logged in: {}", username);
 
         return new AuthResponse(
-                "token",
+                jwtToken,
                 String.format("Welcome back %s!", username),
                 "Login Success",
                 userMapper.getUserResponse(user)
