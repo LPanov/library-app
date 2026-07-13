@@ -23,6 +23,11 @@ const Login = () => {
 
       // 3. Send the POST request to your API Gateway via the configured client
       const response = await api.post('/api/v1/user/login', payload);
+
+      localStorage.setItem('access_token', response.data.access_token);
+      localStorage.setItem('refresh_token', response.data.refresh_token);
+
+      navigate('/dashboard');
       
       console.log('Login successful:', response.data);
 

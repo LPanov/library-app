@@ -14,21 +14,14 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-  async (config) => {
-    if (keycloak.authenticated) {
-      try {
-        await keycloak.updateToken(30);
-        config.headers.Authorization = `Bearer ${keycloak.token}`;
-      } catch (error) {
-        console.error('Failed to refresh Keycloak token', error);
-        keycloak.login(); 
-      }
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;
