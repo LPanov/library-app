@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import api from "../../config/keycloak";
+import api from "../../config/api.js";
 import { useNavigate } from 'react-router-dom'; 
 
 const Login = () => {
