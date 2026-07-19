@@ -41,7 +41,9 @@ services:
     volumes:
       - ./docker/keycloak/realms/:/opt/keycloak/data/import/
     networks:
-      - shared-network
+      shared-network:
+        aliases:
+          - identity-provider
     depends_on:
       keycloak-mysql:
         condition: service_healthy
@@ -56,10 +58,7 @@ services:
     networks:
       - shared-network
     environment:
-      - SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_[/**]_ALLOWEDORIGINS=http://localhost:5173
-      - SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_[/**]_ALLOWEDMETHODS=GET,POST,PUT,DELETE,OPTIONS
-      - SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_[/**]_ALLOWEDHEADERS=Authorization,Content-Type
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8080/realms/spring-microservices-security-realm
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://identity-provider:8181/realms/spring-microservices-security-realm
     depends_on:
       keycloak:
         condition: service_started

@@ -1,4 +1,3 @@
-./binlog.000001
 ./binlog.000002
 ./binlog.000003
 ./binlog.000004
@@ -34,3 +33,8 @@
 ./binlog.000034
 ./binlog.000035
 ./binlog.000036
+./binlog.000037
+./binlog.000038
+./binlog.000039
+./binlog.000040
+./binlog.000041
