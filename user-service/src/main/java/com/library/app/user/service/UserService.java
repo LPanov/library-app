@@ -13,6 +13,7 @@ import com.library.app.user.web.dto.AuthResponse;
 import com.library.app.user.web.dto.UserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -43,6 +44,15 @@ public class UserService implements UserDetailsService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final RestTemplate restTemplate;
+
+    @Value("${keycloak.url}")
+    private String keycloakBaseUrl;
+
+    @Value("${keycloak.realm}")
+    private String keycloakRealm;
+
+    @Value("${keycloak.client-id}")
+    private String keycloakClientId;
 
 
     public User findByUsername(String username) {
@@ -79,7 +89,10 @@ public class UserService implements UserDetailsService {
     }
 
     public AuthResponse login(String username, String password) {
-        String keycloakUrl = "http://identity-provider:8080/realms/your-realm/protocol/openid-connect/token";
+        String keycloakUrl = String.format(
+                "%s/realms/%s/protocol/openid-connect/token",
+                keycloakBaseUrl, keycloakRealm
+        );
         User user = findByUsername(username);
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -91,7 +104,7 @@ public class UserService implements UserDetailsService {
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("grant_type", "password");
-        map.add("client_id", "spring-microservice");
+        map.add("client_id", keycloakClientId);
         map.add("username", username);
         map.add("password", password);
 
