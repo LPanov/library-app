@@ -24,24 +24,19 @@ public class UserController {
                 .body(userService.register(userRequest));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        return ResponseEntity.ok(userService.login(loginRequest.username(), loginRequest.password()));
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
-        userService.createPasswordResetToken(forgotPasswordRequest.email());
-
-        ApiResponse apiResponse = new ApiResponse(String.format("Reset Password Token sent successfully to %s", forgotPasswordRequest.email()), true);
-        return ResponseEntity.ok(apiResponse);
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
-        userService.resetPassword(resetPasswordRequest.token(), resetPasswordRequest.password());
-
-        return ResponseEntity.ok(new ApiResponse("Password reset successfully", true));
-
-    }
+//    @PostMapping("/forgot-password")
+//    public ResponseEntity<ApiResponse> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
+//        userService.createPasswordResetToken(forgotPasswordRequest.email());
+//
+//        ApiResponse apiResponse = new ApiResponse(String.format("Reset Password Token sent successfully to %s", forgotPasswordRequest.email()), true);
+//        return ResponseEntity.ok(apiResponse);
+//    }
+//
+//    @PostMapping("/reset-password")
+//    public ResponseEntity<ApiResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
+//        userService.resetPassword(resetPasswordRequest.token(), resetPasswordRequest.password());
+//
+//        return ResponseEntity.ok(new ApiResponse("Password reset successfully", true));
+//
+//    }
 }

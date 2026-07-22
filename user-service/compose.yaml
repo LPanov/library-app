@@ -41,7 +41,7 @@ services:
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://identity-provider:8181/realms/spring-microservices-security-realm/protocol/openid-connect/certs
       - KEYCLOAK_URL=http://identity-provider:8181
       - KEYCLOAK_REALM=spring-microservices-security-realm
-      - KEYCLOAK_CLIENT_ID=library-frontend
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=${KEYCLOAK_ADMIN_CLIENT_SECRET}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
 
 networks:
